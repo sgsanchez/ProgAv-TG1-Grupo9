@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: ventas-facturacion
+  profiles:
+    # Perfil usado si no se especifica otro (H2 en archivo, no requiere Docker).
+    # Para la base de datos real: SPRING_PROFILES_ACTIVE=postgres
+    default: dev
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+  mvc:
+    problemdetails:
+      enabled: true
+  jackson:
+    default-property-inclusion: non_null
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: always
+    include-binding-errors: always
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+app:
+  security:
+    # Cabecera obligatoria X-API-KEY para los endpoints /api/**
+    api-key: ${APP_API_KEY:grupo9-2026}
+  ventas:
+    # Porcentaje de IVA aplicado al cálculo del total de la venta
+    iva: ${APP_IVA:0.15}
+
+logging:
+  level:
+    root: INFO
+    ec.edu.espe.ventas: INFO

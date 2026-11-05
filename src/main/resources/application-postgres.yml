@@ -1,0 +1,19 @@
+# Perfil de base de datos real: PostgreSQL (ver docker-compose.yml).
+# Activar con: SPRING_PROFILES_ACTIVE=postgres
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:ventasdb}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USER:ventas}
+    password: ${DB_PASSWORD:ventas123}
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 30000
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: America/Guayaquil
