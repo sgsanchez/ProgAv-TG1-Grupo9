@@ -1,0 +1,48 @@
+name: CI - Compilación y pruebas
+
+on:
+  push:
+    branches: [main, develop, "feature/**"]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Compilar y ejecutar pruebas
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Obtener el código del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Dar permisos de ejecución al Maven Wrapper
+        run: chmod +x Proyecto/mvnw
+
+      - name: Compilar el proyecto y ejecutar las pruebas
+        working-directory: Proyecto
+        run: ./mvnw -B -ntp clean verify
+
+      - name: Publicar reporte de pruebas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: Proyecto/target/surefire-reports/
+          retention-days: 15
+
+      - name: Resumen del resultado
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "✅ Construcción exitosa: el proyecto compila y todas las pruebas pasan."
+          else
+            echo "❌ La construcción falló. Revisar los reportes publicados."
+          fi
