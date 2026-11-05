@@ -74,10 +74,44 @@ cd Proyecto
 
 ### 2. Perfil PostgreSQL (base de datos real)
 
-```bash
-cd Proyecto
+**Opción A — PostgreSQL portable (sin Docker ni administrador)**
+
+Los binarios se instalan una sola vez fuera del repositorio, en
+`%LOCALAPPDATA%\PostgreSQL`, y el clúster de datos vive en `D:\pgdata-ventas`
+(configurable con la variable `PGDATA_VENTAS`). Pasos de instalación:
+
+```powershell
+# 1) Descargar y extraer los binarios (PostgreSQL 17.7 para Windows x64)
+$dest = "$env:LOCALAPPDATA\PostgreSQL"
+New-Item -ItemType Directory -Force -Path $dest | Out-Null
+curl.exe -L -o "$env:TEMP\pg17.zip" "https://get.enterprisedb.com/postgresql/postgresql-17.7-1-windows-x64-binaries.zip"
+tar.exe -xf "$env:TEMP\pg17.zip" -C $dest
+
+# 2) Inicializar el clúster (usar LATIN1: en este equipo initdb falla con UTF8)
+$pg = "$env:LOCALAPPDATA\PostgreSQL\pgsql\bin"
+& "$pg\initdb.exe" -D 'D:\pgdata-ventas' -U ventas -E LATIN1 --locale=C
+
+# 3) Iniciar, establecer contraseña y crear la base de datos
+& "$pg\pg_ctl.exe" start -D 'D:\pgdata-ventas' -l "$env:LOCALAPPDATA\PostgreSQL\postgres.log" -o "-p 5432" -w
+& "$pg\psql.exe" -h localhost -U ventas -d postgres -c "ALTER USER ventas WITH PASSWORD 'ventas123';"
+& "$pg\psql.exe" -h localhost -U ventas -d postgres -c "CREATE DATABASE ventasdb OWNER ventas;"
+```
+
+Una vez inicializado el clúster, el ciclo diario es:
+
+```powershell
+.\scripts\db-start.ps1                            # inicia el servidor en localhost:5432
+$env:SPRING_PROFILES_ACTIVE = "postgres"
+.\mvnw.cmd spring-boot:run
+.\scripts\db-stop.ps1                             # detiene el servidor
+```
+
+**Opción B — Docker Desktop**
+
+```powershell
 docker compose up -d postgres
-SPRING_PROFILES_ACTIVE=postgres ./mvnw spring-boot:run
+$env:SPRING_PROFILES_ACTIVE = "postgres"
+.\mvnw.cmd spring-boot:run
 ```
 
 ### 3. Todo con Docker
@@ -104,10 +138,40 @@ java -jar target/ventas-facturacion-1.0.0.jar
 
 ---
 
+## Trabajo colaborativo con Git
+
+Cada integrante debe configurar su identidad **en su propio equipo** (la nota depende del historial de commits):
+
+```powershell
+git config --global user.name  "Nombre Apellido"
+git config --global user.email "correo@espe.edu.ec"
+```
+
+Flujo de trabajo por rama, con `develop` como integración:
+
+```powershell
+git clone https://github.com/<usuario>/ventas-facturacion-grupo9.git
+git checkout -b feature/mi-funcionalidad develop
+# ... trabajo y commits ...
+git push -u origin feature/mi-funcionalidad
+```
+
+| Rama | Responsable | Contenido |
+|---|---|---|
+| `feature/clientes` | Josué Muñoz | Entidad, CRUD y reglas de Cliente |
+| `feature/ventas` | Santiago Sánchez | Venta, DetalleVenta, stock y totales |
+| `feature/transversales` | Steven Sandoval | Interceptor, aspecto y excepciones |
+| `feature/infra-docs` | Katherine Vargas | CI/CD, pruebas de integración e informes |
+
+Convención de mensajes: `feat:`, `fix:`, `docs:`, `test:`, `chore:`, `ci:`.
+
+---
+
 ## Estado del proyecto
 
 | Fase | Descripción | Estado |
 |---|---|---|
+| 0 | Entorno, Git y repositorio | ✅ |
 | 1 | Esqueleto, configuración, perfiles, Docker, CI | ✅ |
 | 2 | Modelo de datos y persistencia | ⏳ |
 | 3 | DTOs, validaciones y mappers | ⏳ |
