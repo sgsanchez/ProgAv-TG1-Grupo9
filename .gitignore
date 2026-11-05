@@ -1,0 +1,48 @@
+# ---- Java / Maven ----
+target/
+!.mvn/wrapper/maven-wrapper.properties
+.mvn/wrapper/maven-wrapper.jar
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mtj.tmp/
+
+# ---- Base de datos local (H2 en archivo) ----
+data/
+*.db
+*.mv.db
+*.trace.db
+*.lock.db
+
+# ---- IDE ----
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.classpath
+.project
+.settings/
+bin/
+nbproject/private/
+
+# ---- Sistema operativo ----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- Logs y temporales ----
+*.log
+logs/
+.tmp/
+tmp/
+
+# ---- Variables de entorno con secretos ----
+.env
+.env.local

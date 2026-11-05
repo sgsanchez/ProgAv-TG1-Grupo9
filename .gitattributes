@@ -1,0 +1,20 @@
+# Normaliza los finales de línea al hacer commit (evita diferencias Windows/Linux en el CI)
+* text=auto
+
+# Scripts del Maven Wrapper
+mvnw text eol=lf
+mvnwDebug text eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Configuración y documentación
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.java text eol=lf
+
+# Archivos binarios
+*.jar binary
+*.png binary
+*.jpg binary
+*.pdf binary
