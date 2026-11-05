@@ -91,15 +91,23 @@ tar.exe -xf "$env:TEMP\pg17.zip" -C $dest
 $pg = "$env:LOCALAPPDATA\PostgreSQL\pgsql\bin"
 & "$pg\initdb.exe" -D 'D:\pgdata-ventas' -U ventas -E LATIN1 --locale=C
 
-# 3) Iniciar, establecer contraseña y crear la base de datos
+# 3) Iniciar, establecer contraseña y crear la base de datos en UTF8
 & "$pg\pg_ctl.exe" start -D 'D:\pgdata-ventas' -l "$env:LOCALAPPDATA\PostgreSQL\postgres.log" -o "-p 5432" -w
 & "$pg\psql.exe" -h localhost -U ventas -d postgres -c "ALTER USER ventas WITH PASSWORD 'ventas123';"
-& "$pg\psql.exe" -h localhost -U ventas -d postgres -c "CREATE DATABASE ventasdb OWNER ventas;"
+& "$pg\psql.exe" -h localhost -U ventas -d postgres -c "CREATE DATABASE ventasdb WITH OWNER ventas ENCODING 'UTF8' TEMPLATE template0;"
 ```
+
+> **Nota sobre la codificación:** en este equipo `initdb` falla al crear el clúster en UTF8
+> por el locale del sistema, por eso el clúster se crea en `LATIN1` con `--locale=C`.
+> Gracias a que el locale es `C`, la base `ventasdb` sí puede crearse en **UTF8** usando
+> `template0`, que es lo que realmente importa para la aplicación.
 
 Una vez inicializado el clúster, el ciclo diario es:
 
 ```powershell
+# Solo la primera vez, si PowerShell bloquea los scripts:
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+
 .\scripts\db-start.ps1                            # inicia el servidor en localhost:5432
 $env:SPRING_PROFILES_ACTIVE = "postgres"
 .\mvnw.cmd spring-boot:run
