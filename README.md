@@ -129,6 +129,26 @@ cd Proyecto
 docker compose up --build
 ```
 
+## Apagado y reinicio del equipo
+
+Para que apagar la computadora nunca deje el proyecto en mal estado:
+
+```powershell
+# ANTES de apagar el equipo
+.\scripts\apagar-entorno.ps1     # detiene la API y PostgreSQL, y avisa si hay cambios sin commitear
+
+# AL ENCENDER el equipo
+.\scripts\verificar-entorno.ps1  # comprueba herramientas, arranca la BD y valida la conexión
+.\scripts\verificar-entorno.ps1 -Compilar   # además compila y ejecuta las pruebas
+```
+
+Los datos de PostgreSQL se guardan en `D:\pgdata-ventas`, fuera del repositorio, por lo que
+sobreviven a cualquier reinicio o actualización de código.
+
+> Si `verificar-entorno.ps1` reporta un fallo de PostgreSQL, revisar el log en
+> `%LOCALAPPDATA%\PostgreSQL\postgres.log`. Un BOM al inicio de `postgresql.conf` impide que el
+> servidor arranque; el archivo debe guardarse en UTF-8 **sin BOM**.
+
 ## Pruebas
 
 ```bash

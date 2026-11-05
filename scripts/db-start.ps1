@@ -22,4 +22,8 @@ if ($LASTEXITCODE -eq 0) {
 }
 
 & (Join-Path $pgDir 'bin\pg_ctl.exe') start -D $dataDir -l $logFile -o "-p 5432" -w
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "No se pudo iniciar PostgreSQL. Revise el log: $logFile"
+}
+
 Write-Host "PostgreSQL iniciado en localhost:5432 (base de datos: ventasdb)." -ForegroundColor Green
