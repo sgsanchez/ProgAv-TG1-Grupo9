@@ -53,6 +53,34 @@ Interceptor HTTP (transversal a /api/**)
 
 ---
 
+## Endpoints
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/api/clientes` | Lista clientes (filtro opcional `?apellido=`) |
+| GET | `/api/clientes/{id}` | Obtiene un cliente |
+| POST | `/api/clientes` | Registra un cliente |
+| PUT | `/api/clientes/{id}` | Actualiza un cliente |
+| DELETE | `/api/clientes/{id}` | Elimina un cliente sin ventas |
+| GET | `/api/productos` | Lista productos (filtro opcional `?nombre=`) |
+| GET | `/api/productos/{id}` | Obtiene un producto |
+| GET | `/api/productos/bajo-stock` | Productos con stock en el mínimo o por debajo |
+| GET | `/api/productos/mas-vendidos` | Ranking por unidades vendidas |
+| POST | `/api/productos` | Registra un producto |
+| PUT | `/api/productos/{id}` | Actualiza un producto |
+| DELETE | `/api/productos/{id}` | Elimina un producto no vendido |
+| GET | `/api/ventas` | Lista todas las ventas |
+| GET | `/api/ventas/{id}` | Obtiene una venta con sus detalles |
+| GET | `/api/ventas/cliente/{clienteId}` | Ventas de un cliente |
+| GET | `/api/ventas/cliente/{clienteId}/total` | Total facturado al cliente |
+| POST | `/api/ventas` | Registra una venta y descuenta stock |
+| POST | `/api/ventas/{id}/anular` | Anula una venta y repone stock |
+| PATCH | `/api/ventas/{id}/estado` | Cambia el estado de la venta |
+
+Totales: **9 GET · 4 POST · 3 PUT-PATCH · 2 DELETE** (el mínimo exigido es 5/3/2/2).
+
+---
+
 ## Requisitos previos
 
 - **JDK 21 o superior** (el proyecto compila con `--release 21`).
@@ -218,7 +246,7 @@ Convención de mensajes: `feat:`, `fix:`, `docs:`, `test:`, `chore:`, `ci:`.
 | 2 | Modelo de datos y persistencia | ✅ |
 | 3 | DTOs, validaciones y mappers | ✅ |
 | 4 | Servicios y reglas de negocio | ✅ |
-| 5 | Controladores REST | ⏳ |
+| 5 | Controladores REST | ✅ |
 | 6 | Excepciones, interceptor y aspecto | ⏳ |
 | 7 | Procesamiento asíncrono (no bloqueante) | ⏳ |
 | 8 | Pruebas de integración y CI/CD | ⏳ |
