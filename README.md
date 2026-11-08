@@ -76,8 +76,48 @@ Interceptor HTTP (transversal a /api/**)
 | POST | `/api/ventas` | Registra una venta y descuenta stock |
 | POST | `/api/ventas/{id}/anular` | Anula una venta y repone stock |
 | PATCH | `/api/ventas/{id}/estado` | Cambia el estado de la venta |
+| GET | `/api/auditoria` | Registros de auditoría generados por AOP (filtro `?operacion=`) |
 
-Totales: **9 GET · 4 POST · 3 PUT-PATCH · 2 DELETE** (el mínimo exigido es 5/3/2/2).
+Totales: **10 GET · 4 POST · 3 PUT-PATCH · 2 DELETE** (el mínimo exigido es 5/3/2/2).
+
+> **Autenticación:** todos los endpoints bajo `/api/**` exigen la cabecera `X-API-KEY`.
+> El valor por defecto en desarrollo es `grupo9-2026` (configurable con `APP_API_KEY`).
+
+---
+
+## Componentes transversales
+
+### Manejo centralizado de excepciones
+
+Todas las excepciones se traducen a un cuerpo uniforme
+`{ timestamp, status, error, mensaje, ruta, detalles }` desde
+`GlobalExceptionHandler` (`@RestControllerAdvice`):
+
+| Excepción | HTTP |
+|---|---|
+| `RecursoNoEncontradoException` | 404 |
+| `StockInsuficienteException` | 409 (incluye solicitado y disponible) |
+| `ReglaNegocioException` | 409 |
+| `RecursoDuplicadoException` | 409 |
+| Errores de validación / JSON inválido | 400 (con detalle por campo) |
+| Error no controlado | 500 |
+
+### Interceptor HTTP
+
+`ApiKeyInterceptor` se aplica a `/api/**` y realiza tres funciones transversales:
+
+1. Valida la cabecera `X-API-KEY` (responde 401 si falta o es incorrecta).
+2. Registra método, ruta, IP y código de respuesta de cada solicitud.
+3. Mide el tiempo de ejecución.
+
+Además, `TiempoRespuestaFilter` devuelve esa medición en la cabecera `X-Response-Time`.
+
+### Aspecto (AOP)
+
+`AuditoriaAspect` intercepta los métodos anotados con `@Auditable` y guarda en la tabla
+`auditoria` la operación, su duración, si fue exitosa y el detalle del error. El registro se
+escribe en una transacción independiente para que quede almacenado incluso cuando la operación
+de negocio falla.
 
 ---
 
@@ -247,7 +287,7 @@ Convención de mensajes: `feat:`, `fix:`, `docs:`, `test:`, `chore:`, `ci:`.
 | 3 | DTOs, validaciones y mappers | ✅ |
 | 4 | Servicios y reglas de negocio | ✅ |
 | 5 | Controladores REST | ✅ |
-| 6 | Excepciones, interceptor y aspecto | ⏳ |
+| 6 | Excepciones, interceptor y aspecto | ✅ |
 | 7 | Procesamiento asíncrono (no bloqueante) | ⏳ |
 | 8 | Pruebas de integración y CI/CD | ⏳ |
 | 9 | Informe y evidencias | ⏳ |

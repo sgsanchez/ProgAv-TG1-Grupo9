@@ -1,5 +1,6 @@
 package ec.edu.espe.ventas.service;
 
+import ec.edu.espe.ventas.aspect.Auditable;
 import ec.edu.espe.ventas.dto.DetalleVentaRequest;
 import ec.edu.espe.ventas.dto.RankingProductoResponse;
 import ec.edu.espe.ventas.dto.VentaRequest;
@@ -99,6 +100,7 @@ public class VentaService {
      * Registra una venta: valida el stock, descuenta las cantidades y calcula
      * los importes en el servidor.
      */
+    @Auditable(descripcion = "Registro de venta")
     public VentaResponse registrar(VentaRequest request) {
         Cliente cliente = clienteRepository.findById(request.clienteId())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Cliente", request.clienteId()));
@@ -157,6 +159,7 @@ public class VentaService {
      * Cambia el estado de una venta. Si el nuevo estado es ANULADA, delega en
      * {@link #anular(Long)} para que el stock se restituya correctamente.
      */
+    @Auditable(descripcion = "Cambio de estado de venta")
     public VentaResponse cambiarEstado(Long id, EstadoVenta nuevoEstado) {
         if (nuevoEstado == null) {
             throw new ReglaNegocioException("Debe indicar el nuevo estado de la venta");
@@ -178,6 +181,7 @@ public class VentaService {
     /**
      * Anula una venta y devuelve al inventario todas las unidades vendidas.
      */
+    @Auditable(descripcion = "Anulación de venta")
     public VentaResponse anular(Long id) {
         Venta venta = obtenerConDetalles(id);
 

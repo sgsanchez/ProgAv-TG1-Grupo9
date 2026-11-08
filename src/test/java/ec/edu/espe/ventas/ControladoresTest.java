@@ -17,8 +17,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -30,12 +32,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * Pruebas de integración de los controladores REST (MockMvc sobre H2 en memoria).
+ *
+ * <p>Todas las peticiones incluyen la cabecera {@code X-API-KEY} exigida por el
+ * interceptor de acceso.</p>
  */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
 class ControladoresTest {
+
+    private static final String CLAVE = "test-api-key";
 
     @Autowired
     private MockMvc mockMvc;
@@ -58,7 +65,7 @@ class ControladoresTest {
         ClienteRequest request = new ClienteRequest(
                 "1712345678", "Ana", "Perez", "ana.perez@espe.edu.ec", "0991111111", "Quito");
 
-        mockMvc.perform(post("/api/clientes")
+        mockMvc.perform(api(post("/api/clientes"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -73,11 +80,11 @@ class ControladoresTest {
         clienteRepository.saveAndFlush(cliente("1712345678", "Ana", "Perez"));
         clienteRepository.saveAndFlush(cliente("1800000001", "Luis", "Torres"));
 
-        mockMvc.perform(get("/api/clientes"))
+        mockMvc.perform(api(get("/api/clientes")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
 
-        mockMvc.perform(get("/api/clientes").param("apellido", "tor"))
+        mockMvc.perform(api(get("/api/clientes")).param("apellido", "tor"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].apellido").value("Torres"));
@@ -87,7 +94,7 @@ class ControladoresTest {
     void obtieneUnClientePorId() throws Exception {
         Cliente guardado = clienteRepository.saveAndFlush(cliente("1712345678", "Ana", "Perez"));
 
-        mockMvc.perform(get("/api/clientes/{id}", guardado.getId()))
+        mockMvc.perform(api(get("/api/clientes/{id}", guardado.getId())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.cedula").value("1712345678"))
                 .andExpect(jsonPath("$.email").value("ana.perez@espe.edu.ec"));
@@ -99,7 +106,7 @@ class ControladoresTest {
         ClienteRequest actualizado = new ClienteRequest(
                 "1712345678", "Ana Maria", "Perez", "ana.perez@espe.edu.ec", "0988888888", "Quito");
 
-        mockMvc.perform(put("/api/clientes/{id}", guardado.getId())
+        mockMvc.perform(api(put("/api/clientes/{id}", guardado.getId()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(actualizado)))
                 .andExpect(status().isOk())
@@ -111,11 +118,10 @@ class ControladoresTest {
     void eliminaUnClienteSinVentasYDevuelve204() throws Exception {
         Cliente guardado = clienteRepository.saveAndFlush(cliente("1712345678", "Ana", "Perez"));
 
-        mockMvc.perform(delete("/api/clientes/{id}", guardado.getId()))
+        mockMvc.perform(api(delete("/api/clientes/{id}", guardado.getId())))
                 .andExpect(status().isNoContent());
 
-        org.assertj.core.api.Assertions.assertThat(clienteRepository.findById(guardado.getId()))
-                .isEmpty();
+        assertThat(clienteRepository.findById(guardado.getId())).isEmpty();
     }
 
     // ------------------------------------------------------------------
@@ -127,7 +133,7 @@ class ControladoresTest {
         productoRepository.saveAndFlush(new Producto("P-001", "Grapas", new BigDecimal("1.00"), 3, 10));
         productoRepository.saveAndFlush(new Producto("P-002", "Clips", new BigDecimal("1.50"), 40, 10));
 
-        mockMvc.perform(get("/api/productos/bajo-stock"))
+        mockMvc.perform(api(get("/api/productos/bajo-stock")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].codigo").value("P-001"))
@@ -147,7 +153,7 @@ class ControladoresTest {
         VentaRequest request = new VentaRequest(cliente.getId(),
                 List.of(new DetalleVentaRequest(producto.getId(), 2)));
 
-        mockMvc.perform(post("/api/ventas")
+        mockMvc.perform(api(post("/api/ventas"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -160,7 +166,7 @@ class ControladoresTest {
                 .andExpect(jsonPath("$.detalles.length()").value(1));
 
         Producto actualizado = productoRepository.findById(producto.getId()).orElseThrow();
-        org.assertj.core.api.Assertions.assertThat(actualizado.getStock()).isEqualTo(3);
+        assertThat(actualizado.getStock()).isEqualTo(3);
     }
 
     @Test
@@ -172,7 +178,7 @@ class ControladoresTest {
         VentaRequest request = new VentaRequest(cliente.getId(),
                 List.of(new DetalleVentaRequest(producto.getId(), 2)));
 
-        String cuerpo = mockMvc.perform(post("/api/ventas")
+        String cuerpo = mockMvc.perform(api(post("/api/ventas"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -180,12 +186,11 @@ class ControladoresTest {
 
         Long ventaId = objectMapper.readTree(cuerpo).get("id").asLong();
 
-        mockMvc.perform(post("/api/ventas/{id}/anular", ventaId))
+        mockMvc.perform(api(post("/api/ventas/{id}/anular", ventaId)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.estado").value("ANULADA"));
 
-        org.assertj.core.api.Assertions.assertThat(
-                productoRepository.findById(producto.getId()).orElseThrow().getStock()).isEqualTo(5);
+        assertThat(productoRepository.findById(producto.getId()).orElseThrow().getStock()).isEqualTo(5);
     }
 
     @Test
@@ -194,7 +199,7 @@ class ControladoresTest {
         Producto producto = productoRepository.saveAndFlush(
                 new Producto("P-001", "Cuaderno", new BigDecimal("10.00"), 5, 2));
 
-        String cuerpo = mockMvc.perform(post("/api/ventas")
+        String cuerpo = mockMvc.perform(api(post("/api/ventas"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new VentaRequest(cliente.getId(),
                                 List.of(new DetalleVentaRequest(producto.getId(), 1))))))
@@ -202,11 +207,19 @@ class ControladoresTest {
 
         Long ventaId = objectMapper.readTree(cuerpo).get("id").asLong();
 
-        mockMvc.perform(patch("/api/ventas/{id}/estado", ventaId)
+        mockMvc.perform(api(patch("/api/ventas/{id}/estado", ventaId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"estado\":\"PAGADA\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.estado").value("PAGADA"));
+    }
+
+    // ------------------------------------------------------------------
+    // Apoyo
+    // ------------------------------------------------------------------
+
+    private MockHttpServletRequestBuilder api(MockHttpServletRequestBuilder builder) {
+        return builder.header("X-API-KEY", CLAVE);
     }
 
     private Cliente cliente(String cedula, String nombre, String apellido) {

@@ -1,5 +1,6 @@
 package ec.edu.espe.ventas.service;
 
+import ec.edu.espe.ventas.aspect.Auditable;
 import ec.edu.espe.ventas.dto.ClienteRequest;
 import ec.edu.espe.ventas.dto.ClienteResponse;
 import ec.edu.espe.ventas.entity.Cliente;
@@ -50,12 +51,14 @@ public class ClienteService {
     /**
      * Registra un cliente validando que la cédula y el correo no estén repetidos.
      */
+    @Auditable(descripcion = "Registro de cliente")
     public ClienteResponse crear(ClienteRequest request) {
         validarUnicidad(request, null);
         Cliente cliente = ClienteMapper.toEntity(request);
         return ClienteMapper.toResponse(clienteRepository.save(cliente));
     }
 
+    @Auditable(descripcion = "Actualización de cliente")
     public ClienteResponse actualizar(Long id, ClienteRequest request) {
         Cliente cliente = obtenerCliente(id);
         validarUnicidad(request, id);
@@ -67,6 +70,7 @@ public class ClienteService {
      * Elimina un cliente siempre que no tenga ventas asociadas,
      * para no romper la integridad referencial del historial de facturación.
      */
+    @Auditable(descripcion = "Eliminación de cliente")
     public void eliminar(Long id) {
         Cliente cliente = obtenerCliente(id);
         if (ventaRepository.existsByClienteId(id)) {

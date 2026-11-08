@@ -1,5 +1,6 @@
 package ec.edu.espe.ventas.service;
 
+import ec.edu.espe.ventas.aspect.Auditable;
 import ec.edu.espe.ventas.dto.ProductoRequest;
 import ec.edu.espe.ventas.dto.ProductoResponse;
 import ec.edu.espe.ventas.entity.Producto;
@@ -58,6 +59,7 @@ public class ProductoService {
                 .toList();
     }
 
+    @Auditable(descripcion = "Registro de producto")
     public ProductoResponse crear(ProductoRequest request) {
         String codigo = request.codigo() == null ? null : request.codigo().trim();
         if (productoRepository.existsByCodigo(codigo)) {
@@ -67,6 +69,7 @@ public class ProductoService {
         return ProductoMapper.toResponse(productoRepository.save(producto));
     }
 
+    @Auditable(descripcion = "Actualización de producto")
     public ProductoResponse actualizar(Long id, ProductoRequest request) {
         Producto producto = obtenerProducto(id);
         String codigo = request.codigo() == null ? null : request.codigo().trim();
@@ -85,6 +88,7 @@ public class ProductoService {
      * Elimina un producto solo si nunca fue vendido, para conservar el
      * histórico de las facturas ya emitidas.
      */
+    @Auditable(descripcion = "Eliminación de producto")
     public void eliminar(Long id) {
         Producto producto = obtenerProducto(id);
         if (detalleVentaRepository.existsByProductoId(id)) {
