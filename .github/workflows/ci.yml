@@ -24,10 +24,9 @@ jobs:
           cache: maven
 
       - name: Dar permisos de ejecución al Maven Wrapper
-        run: chmod +x Proyecto/mvnw
+        run: chmod +x mvnw
 
       - name: Compilar el proyecto y ejecutar las pruebas
-        working-directory: Proyecto
         run: ./mvnw -B -ntp clean verify
 
       - name: Publicar reporte de pruebas
@@ -35,7 +34,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: surefire-reports
-          path: Proyecto/target/surefire-reports/
+          path: target/surefire-reports/
           retention-days: 15
 
       - name: Resumen del resultado
