@@ -40,15 +40,18 @@ public class VentaService {
     private final VentaRepository ventaRepository;
     private final ClienteRepository clienteRepository;
     private final ProductoRepository productoRepository;
+    private final ComprobanteService comprobanteService;
     private final BigDecimal tasaIva;
 
     public VentaService(VentaRepository ventaRepository,
                         ClienteRepository clienteRepository,
                         ProductoRepository productoRepository,
+                        ComprobanteService comprobanteService,
                         @Value("${app.ventas.iva:0.15}") BigDecimal tasaIva) {
         this.ventaRepository = ventaRepository;
         this.clienteRepository = clienteRepository;
         this.productoRepository = productoRepository;
+        this.comprobanteService = comprobanteService;
         this.tasaIva = tasaIva;
     }
 
@@ -152,7 +155,13 @@ public class VentaService {
 
         aplicarImportes(venta, subtotal);
 
-        return VentaMapper.toResponse(ventaRepository.save(venta));
+        VentaResponse respuesta = VentaMapper.toResponse(ventaRepository.save(venta));
+
+        // Alternativa NO bloqueante: la generación del comprobante se ejecuta en
+        // segundo plano y no retrasa la respuesta al cliente.
+        comprobanteService.generarAsincrono(respuesta);
+
+        return respuesta;
     }
 
     /**

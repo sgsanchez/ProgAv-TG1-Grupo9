@@ -1,8 +1,10 @@
 package ec.edu.espe.ventas.controller;
 
 import ec.edu.espe.ventas.dto.CambioEstadoVentaRequest;
+import ec.edu.espe.ventas.dto.SolicitudAsincronaResponse;
 import ec.edu.espe.ventas.dto.VentaRequest;
 import ec.edu.espe.ventas.dto.VentaResponse;
+import ec.edu.espe.ventas.service.ComprobanteService;
 import ec.edu.espe.ventas.service.VentaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -29,9 +32,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class VentaController {
 
     private final VentaService ventaService;
+    private final ComprobanteService comprobanteService;
 
-    public VentaController(VentaService ventaService) {
+    public VentaController(VentaService ventaService, ComprobanteService comprobanteService) {
         this.ventaService = ventaService;
+        this.comprobanteService = comprobanteService;
     }
 
     @GetMapping
@@ -77,5 +82,23 @@ public class VentaController {
     public VentaResponse cambiarEstado(@PathVariable Long id,
                                        @Valid @RequestBody CambioEstadoVentaRequest request) {
         return ventaService.cambiarEstado(id, request.estado());
+    }
+
+    @GetMapping("/{id}/comprobante")
+    @Operation(summary = "Genera el comprobante de la venta: modo=bloqueante espera el proceso; "
+            + "modo=asincrono responde 202 de inmediato y lo procesa en segundo plano")
+    public ResponseEntity<?> comprobante(@PathVariable Long id,
+                                         @RequestParam(defaultValue = "asincrono") String modo) {
+        VentaResponse venta = ventaService.buscarPorId(id);
+
+        if ("bloqueante".equalsIgnoreCase(modo)) {
+            return ResponseEntity.ok(comprobanteService.generarBloqueante(venta));
+        }
+
+        comprobanteService.generarAsincrono(venta);
+        return ResponseEntity.accepted().body(new SolicitudAsincronaResponse(
+                "El comprobante de " + venta.numero() + " se está generando en segundo plano",
+                venta.numero(),
+                "EN_PROCESO"));
     }
 }

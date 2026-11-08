@@ -77,8 +77,9 @@ Interceptor HTTP (transversal a /api/**)
 | POST | `/api/ventas/{id}/anular` | Anula una venta y repone stock |
 | PATCH | `/api/ventas/{id}/estado` | Cambia el estado de la venta |
 | GET | `/api/auditoria` | Registros de auditoría generados por AOP (filtro `?operacion=`) |
+| GET | `/api/ventas/{id}/comprobante` | Comprobante de la venta (`?modo=bloqueante\|asincrono`) |
 
-Totales: **10 GET · 4 POST · 3 PUT-PATCH · 2 DELETE** (el mínimo exigido es 5/3/2/2).
+Totales: **11 GET · 4 POST · 3 PUT-PATCH · 2 DELETE** (el mínimo exigido es 5/3/2/2).
 
 > **Autenticación:** todos los endpoints bajo `/api/**` exigen la cabecera `X-API-KEY`.
 > El valor por defecto en desarrollo es `grupo9-2026` (configurable con `APP_API_KEY`).
@@ -118,6 +119,37 @@ Además, `TiempoRespuestaFilter` devuelve esa medición en la cabecera `X-Respon
 `auditoria` la operación, su duración, si fue exitosa y el detalle del error. El registro se
 escribe en una transacción independiente para que quede almacenado incluso cuando la operación
 de negocio falla.
+
+---
+
+## Programación bloqueante y no bloqueante
+
+**Operación considerada bloqueante:** la generación del comprobante de la venta (armado del
+documento y envío por correo) y, en general, cualquier acceso JDBC dentro de la transacción.
+Ambas se ejecutan en el hilo que atiende la petición HTTP (`http-nio-8080-exec-*`); mientras
+duran, ese hilo del pool de Tomcat queda ocupado y no puede atender otra solicitud.
+
+**Por qué afecta el rendimiento:** Tomcat atiende con un número limitado de hilos. Si cada venta
+retiene su hilo ~1,2 s por el comprobante, la concurrencia efectiva baja y las peticiones se
+encolan; además el pool de conexiones de Hikari se agota si las transacciones se alargan.
+
+**Alternativa implementada:** `ComprobanteService.generarAsincrono(...)` con `@Async` y
+`CompletableFuture`, ejecutada en el pool `ventas-async-*` definido en `AsyncConfig`. La venta
+responde de inmediato y el comprobante se genera en segundo plano.
+
+Medición real contra PostgreSQL:
+
+| Petición | Modo | Tiempo |
+|---|---|---|
+| `GET /api/ventas/{id}/comprobante?modo=bloqueante` | Bloqueante | **1271 ms** (hilo `http-nio-8080-exec-2`) |
+| `GET /api/ventas/{id}/comprobante?modo=asincrono` | No bloqueante | **45 ms** (202 Accepted) |
+
+**Ventajas:** libera el hilo de la petición, mejora el throughput y la latencia percibida.
+**Limitaciones:** no garantiza orden ni entrega inmediata; los errores ocurren fuera del ciclo de
+la petición (quedan en el log y en la auditoría) y, al usar un pool en memoria, las tareas
+pendientes se pierden si la aplicación se detiene (en producción se usaría una cola persistente).
+La escritura en la base de datos sigue siendo bloqueante: hacerla no bloqueante exigiría
+tecnología reactiva (WebFlux + R2DBC).
 
 ---
 
@@ -288,7 +320,7 @@ Convención de mensajes: `feat:`, `fix:`, `docs:`, `test:`, `chore:`, `ci:`.
 | 4 | Servicios y reglas de negocio | ✅ |
 | 5 | Controladores REST | ✅ |
 | 6 | Excepciones, interceptor y aspecto | ✅ |
-| 7 | Procesamiento asíncrono (no bloqueante) | ⏳ |
+| 7 | Procesamiento asíncrono (no bloqueante) | ✅ |
 | 8 | Pruebas de integración y CI/CD | ⏳ |
 | 9 | Informe y evidencias | ⏳ |
 

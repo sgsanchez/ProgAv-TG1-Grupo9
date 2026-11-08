@@ -14,6 +14,9 @@ app:
     api-key: test-api-key
   ventas:
     iva: 0.15
+  comprobante:
+    # Sin retardo simulado para que las pruebas sean rápidas
+    retardo-ms: 0
 
 logging:
   level:

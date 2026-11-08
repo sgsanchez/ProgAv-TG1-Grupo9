@@ -36,6 +36,9 @@ app:
   ventas:
     # Porcentaje de IVA aplicado al cálculo del total de la venta
     iva: ${APP_IVA:0.15}
+  comprobante:
+    # Simula el costo de generar el comprobante y enviarlo por correo (ms)
+    retardo-ms: ${APP_COMPROBANTE_RETARDO:1200}
 
 logging:
   level:
