@@ -215,8 +215,8 @@ Convención de mensajes: `feat:`, `fix:`, `docs:`, `test:`, `chore:`, `ci:`.
 |---|---|---|
 | 0 | Entorno, Git y repositorio | ✅ |
 | 1 | Esqueleto, configuración, perfiles, Docker, CI | ✅ |
-| 2 | Modelo de datos y persistencia | ⏳ |
-| 3 | DTOs, validaciones y mappers | ⏳ |
+| 2 | Modelo de datos y persistencia | ✅ |
+| 3 | DTOs, validaciones y mappers | ✅ |
 | 4 | Servicios y reglas de negocio | ⏳ |
 | 5 | Controladores REST | ⏳ |
 | 6 | Excepciones, interceptor y aspecto | ⏳ |
