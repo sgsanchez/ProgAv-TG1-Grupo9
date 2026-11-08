@@ -27,6 +27,8 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
 
     List<Venta> findByFechaVentaBetween(LocalDateTime desde, LocalDateTime hasta);
 
+    boolean existsByClienteId(Long clienteId);
+
     /**
      * Recupera la venta con sus detalles y productos en una sola consulta
      * (evita el problema de consultas N+1).
