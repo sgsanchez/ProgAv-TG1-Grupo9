@@ -149,6 +149,20 @@ sobreviven a cualquier reinicio o actualización de código.
 > `%LOCALAPPDATA%\PostgreSQL\postgres.log`. Un BOM al inicio de `postgresql.conf` impide que el
 > servidor arranque; el archivo debe guardarse en UTF-8 **sin BOM**.
 
+## Datos semilla
+
+Al arrancar con los perfiles `dev` o `postgres` se ejecuta `src/main/resources/db/seed.sql`, que
+inserta clientes, productos y ventas de ejemplo (incluida una con stock bajo y otra anulada).
+El script es **idempotente**: cada `INSERT` valida antes si el registro ya existe, por lo que
+reiniciar la aplicación no duplica información.
+
+| Tabla | Registros |
+|---|---|
+| `clientes` | 3 |
+| `productos` | 5 (uno con stock bajo) |
+| `ventas` | 3 (2 pagadas, 1 anulada) |
+| `detalle_venta` | 4 |
+
 ## Pruebas
 
 ```bash
