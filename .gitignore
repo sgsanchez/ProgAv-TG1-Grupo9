@@ -46,3 +46,8 @@ tmp/
 # ---- Variables de entorno con secretos ----
 .env
 .env.local
+
+# ---- Archivos de trabajo locales (no forman parte del entregable) ----
+AGENTS.md
+.apuntes/
+borradores/
