@@ -16,9 +16,10 @@ realmente trabajó.
 ## 1. Coordinador: crear el repositorio y habilitar al grupo
 
 1. GitHub → **New repository**.
-2. Nombre: `ventas-facturacion-grupo9`. Visibilidad: **Public**. Sin README ni `.gitignore`.
+2. Nombre: `ProgAv-TG1-Grupo9`. Visibilidad: **Public**. Sin README ni `.gitignore`.
 3. **Settings → Collaborators → Add people** → agregar a los otros tres integrantes con rol **Write**.
-4. Copiar la URL HTTPS del repositorio y compartirla en el chat del grupo.
+4. Copiar la URL HTTPS del repositorio (`https://github.com/sgsanchez/ProgAv-TG1-Grupo9.git`)
+   y compartirla en el chat del grupo.
 
 > El repositorio debe seguir siendo **público** y accesible sin solicitar permisos: esa es una
 > condición explícita de la rúbrica.
@@ -57,8 +58,8 @@ git config --global user.email
 ## 3. Clonar el repositorio
 
 ```powershell
-git clone https://github.com/<usuario>/ventas-facturacion-grupo9.git
-cd ventas-facturacion-grupo9
+git clone https://github.com/sgsanchez/ProgAv-TG1-Grupo9.git
+cd ProgAv-TG1-Grupo9
 git checkout develop
 ```
 

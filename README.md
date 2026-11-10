@@ -292,7 +292,7 @@ git config --global user.email "correo@espe.edu.ec"
 Flujo de trabajo por rama, con `develop` como integración:
 
 ```powershell
-git clone https://github.com/<usuario>/ventas-facturacion-grupo9.git
+git clone https://github.com/sgsanchez/ProgAv-TG1-Grupo9.git
 git checkout -b feature/mi-funcionalidad develop
 # ... trabajo y commits ...
 git push -u origin feature/mi-funcionalidad
