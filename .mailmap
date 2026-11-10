@@ -1,0 +1,21 @@
+# .mailmap — normaliza autor/committer en el historial de Git
+# Formato: Nombre Canónico <correo-canónico> [<alias> ...]
+# Permite que GitHub y `git shortlog -sne` agrupen correctamente a cada integrante
+# aunque commiteen con variaciones del correo o del nombre.
+
+# Josué Nicolás Muñoz Gualotuña
+Josué Nicolás Muñoz Gualotuña <jnmunoz2@espe.edu.ec> <jnmunoz2@espe.edu.ec>
+Josué Nicolás Muñoz Gualotuña <jnmunoz2@espe.edu.ec> <jnmunoz2@espe.edu.ec> <josue.nicolas.munoz@espe.edu.ec>
+
+# Santiago Geovanny Sánchez Camacho
+Santiago Geovanny Sánchez Camacho <sgsanchez@espe.edu.ec> <sgsanchez@espe.edu.ec>
+Santiago Geovanny Sánchez Camacho <sgsanchez@espe.edu.ec> Santiago Geovanny Sanchez Camacho <sgsanchez@espe.edu.ec>
+Santiago Geovanny Sánchez Camacho <sgsanchez@espe.edu.ec> <santiago.sanchez@espe.edu.ec>
+
+# Steven Sebastián Sandoval Casillas
+Steven Sebastián Sandoval Casillas <ssandoval2@espe.edu.ec> <ssandoval2@espe.edu.ec>
+Steven Sebastián Sandoval Casillas <ssandoval2@espe.edu.ec> <steven.sandoval@espe.edu.ec>
+
+# Katherine Gabriela Vargas Chirau
+Katherine Gabriela Vargas Chirau <kgvargas3@espe.edu.ec> <kgvargas3@espe.edu.ec>
+Katherine Gabriela Vargas Chirau <kgvargas3@espe.edu.ec> <katherine.vargas@espe.edu.ec>
