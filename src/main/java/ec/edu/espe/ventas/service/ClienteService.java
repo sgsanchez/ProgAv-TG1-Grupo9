@@ -43,7 +43,7 @@ public class ClienteService {
 
     @Transactional(readOnly = true)
     public List<ClienteResponse> buscarPorApellido(String apellido) {
-        return clienteRepository.findByApellidoContainingIgnoreCase(apellido).stream()
+        return clienteRepository.findByApellidoContainingIgnoreCase(apellido.trim()).stream()
                 .map(ClienteMapper::toResponse)
                 .toList();
     }
@@ -96,10 +96,11 @@ public class ClienteService {
                     throw new RecursoDuplicadoException("cédula", cedula);
                 });
 
-        clienteRepository.findByEmail(email)
-                .filter(existente -> !existente.getId().equals(idActual))
-                .ifPresent(existente -> {
-                    throw new RecursoDuplicadoException("correo", email);
-                });
+        boolean correoOcupado = idActual == null
+                ? clienteRepository.existsByEmailIgnoreCase(email)
+                : clienteRepository.existsByEmailIgnoreCaseAndIdNot(email, idActual);
+        if (correoOcupado) {
+            throw new RecursoDuplicadoException("correo", email);
+        }
     }
 }
