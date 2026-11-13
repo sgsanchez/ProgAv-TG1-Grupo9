@@ -16,6 +16,11 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
 
     Optional<Cliente> findByEmail(String email);
 
+    /** Unicidad del correo sin distinguir mayúsculas, incluyendo datos anteriores. */
+    boolean existsByEmailIgnoreCaseAndIdNot(String email, Long id);
+
+    boolean existsByEmailIgnoreCase(String email);
+
     boolean existsByCedula(String cedula);
 
     boolean existsByEmail(String email);
