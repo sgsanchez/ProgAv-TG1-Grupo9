@@ -3,6 +3,7 @@ package ec.edu.espe.ventas.mapper;
 import ec.edu.espe.ventas.dto.ClienteRequest;
 import ec.edu.espe.ventas.dto.ClienteResponse;
 import ec.edu.espe.ventas.entity.Cliente;
+import java.util.Locale;
 
 /**
  * Conversión entre {@link Cliente} y sus DTOs.
@@ -27,7 +28,7 @@ public final class ClienteMapper {
         cliente.setCedula(limpiar(request.cedula()));
         cliente.setNombre(limpiar(request.nombre()));
         cliente.setApellido(limpiar(request.apellido()));
-        cliente.setEmail(limpiar(request.email()));
+        cliente.setEmail(request.email() == null ? null : request.email().trim().toLowerCase(Locale.ROOT));
         cliente.setTelefono(limpiar(request.telefono()));
         cliente.setDireccion(limpiar(request.direccion()));
     }

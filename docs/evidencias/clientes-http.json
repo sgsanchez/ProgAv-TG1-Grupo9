@@ -1,0 +1,250 @@
+{
+  "fecha_utc": "2026-11-12T13:54:15.915423+00:00",
+  "entorno": "Java 21 / Spring Boot / H2 persistente en directorio temporal aislado",
+  "reinicio_verificado": true,
+  "casos": [
+    {
+      "caso": "Interceptor sin clave",
+      "metodo": "GET",
+      "ruta": "/api/clientes",
+      "esperado": 401,
+      "status": 401,
+      "duracion_ms": 10.39,
+      "respuesta": {
+        "timestamp": "2026-11-12T08:53:54.009075300",
+        "status": 401,
+        "error": "Unauthorized",
+        "mensaje": "Falta la cabecera obligatoria X-API-KEY",
+        "ruta": "/api/clientes",
+        "detalles": []
+      }
+    },
+    {
+      "caso": "Registro y normalización",
+      "metodo": "POST",
+      "ruta": "/api/clientes",
+      "esperado": 201,
+      "status": 201,
+      "duracion_ms": 658.3,
+      "respuesta": {
+        "id": 1,
+        "cedula": "1800000099",
+        "nombre": "Ana",
+        "apellido": "Perez",
+        "email": "demo.cliente@example.com",
+        "telefono": "0991234567",
+        "direccion": "Quito",
+        "fechaRegistro": "2026-11-12T08:53:54.5464097",
+        "activo": true
+      }
+    },
+    {
+      "caso": "Consulta por ID",
+      "metodo": "GET",
+      "ruta": "/api/clientes/1",
+      "esperado": 200,
+      "status": 200,
+      "duracion_ms": 21.75,
+      "respuesta": {
+        "id": 1,
+        "cedula": "1800000099",
+        "nombre": "Ana",
+        "apellido": "Perez",
+        "email": "demo.cliente@example.com",
+        "telefono": "0991234567",
+        "direccion": "Quito",
+        "fechaRegistro": "2026-11-12T08:53:54.54641",
+        "activo": true
+      }
+    },
+    {
+      "caso": "Filtro con espacios y mayúsculas",
+      "metodo": "GET",
+      "ruta": "/api/clientes?apellido=%20PeR%20",
+      "esperado": 200,
+      "status": 200,
+      "duracion_ms": 20.06,
+      "respuesta": [
+        {
+          "id": 1,
+          "cedula": "1800000099",
+          "nombre": "Ana",
+          "apellido": "Perez",
+          "email": "demo.cliente@example.com",
+          "telefono": "0991234567",
+          "direccion": "Quito",
+          "fechaRegistro": "2026-11-12T08:53:54.54641",
+          "activo": true
+        }
+      ]
+    },
+    {
+      "caso": "Cédula duplicada",
+      "metodo": "POST",
+      "ruta": "/api/clientes",
+      "esperado": 409,
+      "status": 409,
+      "duracion_ms": 46.01,
+      "respuesta": {
+        "timestamp": "2026-11-12T08:53:54.7465196",
+        "status": 409,
+        "error": "Conflict",
+        "mensaje": "Ya existe un registro con cédula = '1800000099'",
+        "ruta": "/api/clientes",
+        "detalles": []
+      }
+    },
+    {
+      "caso": "Correo duplicado sin distinguir mayúsculas",
+      "metodo": "POST",
+      "ruta": "/api/clientes",
+      "esperado": 409,
+      "status": 409,
+      "duracion_ms": 16.08,
+      "respuesta": {
+        "timestamp": "2026-11-12T08:53:54.7744115",
+        "status": 409,
+        "error": "Conflict",
+        "mensaje": "Ya existe un registro con correo = 'demo.cliente@example.com'",
+        "ruta": "/api/clientes",
+        "detalles": []
+      }
+    },
+    {
+      "caso": "Validación de cédula",
+      "metodo": "POST",
+      "ruta": "/api/clientes",
+      "esperado": 400,
+      "status": 400,
+      "duracion_ms": 38.07,
+      "respuesta": {
+        "timestamp": "2026-11-12T08:53:54.8014004",
+        "status": 400,
+        "error": "Bad Request",
+        "mensaje": "Los datos enviados no son válidos",
+        "ruta": "/api/clientes",
+        "detalles": [
+          "cedula: La cédula debe contener exactamente 10 dígitos"
+        ]
+      }
+    },
+    {
+      "caso": "Actualización",
+      "metodo": "PUT",
+      "ruta": "/api/clientes/1",
+      "esperado": 200,
+      "status": 200,
+      "duracion_ms": 51.92,
+      "respuesta": {
+        "id": 1,
+        "cedula": "1800000099",
+        "nombre": "Ana Maria",
+        "apellido": "Perez",
+        "email": "demo.cliente@example.com",
+        "telefono": "0991234567",
+        "direccion": "Quito",
+        "fechaRegistro": "2026-11-12T08:53:54.54641",
+        "activo": true
+      }
+    },
+    {
+      "caso": "Persistencia después de reiniciar Java",
+      "metodo": "GET",
+      "ruta": "/api/clientes/1",
+      "esperado": 200,
+      "status": 200,
+      "duracion_ms": 52.87,
+      "respuesta": {
+        "id": 1,
+        "cedula": "1800000099",
+        "nombre": "Ana Maria",
+        "apellido": "Perez",
+        "email": "demo.cliente@example.com",
+        "telefono": "0991234567",
+        "direccion": "Quito",
+        "fechaRegistro": "2026-11-12T08:53:54.54641",
+        "activo": true
+      }
+    },
+    {
+      "caso": "Eliminación sin ventas",
+      "metodo": "DELETE",
+      "ruta": "/api/clientes/1",
+      "esperado": 204,
+      "status": 204,
+      "duracion_ms": 215.46,
+      "respuesta": null
+    },
+    {
+      "caso": "Consulta de recurso eliminado",
+      "metodo": "GET",
+      "ruta": "/api/clientes/1",
+      "esperado": 404,
+      "status": 404,
+      "duracion_ms": 48.41,
+      "respuesta": {
+        "timestamp": "2026-11-12T08:54:15.8727071",
+        "status": 404,
+        "error": "Not Found",
+        "mensaje": "Cliente no encontrado con id 1",
+        "ruta": "/api/clientes/1",
+        "detalles": []
+      }
+    },
+    {
+      "caso": "Auditoría de operaciones de clientes",
+      "metodo": "GET",
+      "ruta": "/api/auditoria",
+      "esperado": 200,
+      "status": 200,
+      "duracion_ms": 24.58,
+      "respuesta": [
+        {
+          "id": 33,
+          "operacion": "ClienteService.eliminar",
+          "descripcion": "Eliminación de cliente",
+          "duracionMs": 77,
+          "exitoso": true,
+          "detalle": "Eliminación de cliente",
+          "fecha": "2026-11-12T08:54:15.748739"
+        },
+        {
+          "id": 4,
+          "operacion": "ClienteService.actualizar",
+          "descripcion": "Actualización de cliente",
+          "duracionMs": 16,
+          "exitoso": true,
+          "detalle": "Actualización de cliente",
+          "fecha": "2026-11-12T08:53:54.840706"
+        },
+        {
+          "id": 3,
+          "operacion": "ClienteService.crear",
+          "descripcion": "RecursoDuplicadoException: Ya existe un registro con correo = 'demo.cliente@example.com'",
+          "duracionMs": 5,
+          "exitoso": false,
+          "detalle": "RecursoDuplicadoException: Ya existe un registro con correo = 'demo.cliente@example.com'",
+          "fecha": "2026-11-12T08:53:54.770423"
+        },
+        {
+          "id": 2,
+          "operacion": "ClienteService.crear",
+          "descripcion": "RecursoDuplicadoException: Ya existe un registro con cédula = '1800000099'",
+          "duracionMs": 3,
+          "exitoso": false,
+          "detalle": "RecursoDuplicadoException: Ya existe un registro con cédula = '1800000099'",
+          "fecha": "2026-11-12T08:53:54.735754"
+        },
+        {
+          "id": 1,
+          "operacion": "ClienteService.crear",
+          "descripcion": "Registro de cliente",
+          "duracionMs": 126,
+          "exitoso": true,
+          "detalle": "Registro de cliente",
+          "fecha": "2026-11-12T08:53:54.6151"
+        }
+      ]
+    }
+  ]
+}
