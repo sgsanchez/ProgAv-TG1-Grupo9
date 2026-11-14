@@ -48,6 +48,6 @@ tmp/
 .env.local
 
 # ---- Archivos de trabajo locales (no forman parte del entregable) ----
-AGENTS.md
+*.local.md
 .apuntes/
 borradores/
