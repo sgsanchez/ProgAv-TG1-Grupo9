@@ -15,6 +15,16 @@ if (-not (Test-Path $dataDir)) {
     Write-Error "No se encontró el clúster de datos en $dataDir."
 }
 
+# Un apagado abrupto deja un postmaster.pid huérfano que impide arrancar el servidor.
+$pidFile = Join-Path $dataDir 'postmaster.pid'
+if (Test-Path $pidFile) {
+    $pidPostgres = (Get-Content $pidFile -TotalCount 1).Trim()
+    if (-not (Get-Process -Id $pidPostgres -ErrorAction SilentlyContinue)) {
+        Write-Host "Se encontró un postmaster.pid huérfano (PID $pidPostgres); se elimina para poder arrancar." -ForegroundColor Yellow
+        Remove-Item $pidFile -Force
+    }
+}
+
 & (Join-Path $pgDir 'bin\pg_ctl.exe') status -D $dataDir *> $null
 if ($LASTEXITCODE -eq 0) {
     Write-Host "PostgreSQL ya está en ejecución (puerto 5432)." -ForegroundColor Yellow
