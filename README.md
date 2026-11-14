@@ -26,7 +26,7 @@ detalles de venta, como parte del **Proyecto Grupal de la Unidad 1** de la asign
 - Java 21 · Spring Boot 3.5.x
 - Spring Web · Spring Data JPA · Bean Validation
 - Spring AOP (aspectos) · Interceptores HTTP
-- PostgreSQL 16 (base de datos real) · H2 (perfil de desarrollo y pruebas)
+- PostgreSQL 17 (base de datos real) · H2 (perfil de desarrollo y pruebas)
 - springdoc-openapi (Swagger UI)
 - JUnit 5 · Mockito · Testcontainers
 - Maven Wrapper (`mvnw`) · Docker · GitHub Actions
@@ -83,7 +83,7 @@ Interceptor HTTP (transversal a /api/**)
 | GET | `/api/auditoria?pagina=0&tamano=20&operacion=Venta` | Registros paginados (máx. 100), orden descendente por fecha |
 | GET | `/api/ventas/{id}/comprobante` | Comprobante de la venta (`?modo=bloqueante\|asincrono`) |
 
-Totales: **11 GET · 4 POST · 3 PUT-PATCH · 2 DELETE** (el mínimo exigido es 5/3/2/2).
+Totales: **12 GET · 4 POST · 3 PUT-PATCH · 2 DELETE** (el mínimo exigido es 5/3/2/2).
 
 > **Autenticación:** todos los endpoints bajo `/api/**` exigen la cabecera `X-API-KEY`.
 > El valor por defecto en desarrollo es `grupo9-2026` (configurable con `APP_API_KEY`).
@@ -274,6 +274,11 @@ cd Proyecto
 ./mvnw verify
 ```
 
+El proyecto tiene **82 pruebas** repartidas en diez clases: unidad de servicios y validación de
+DTO, integración de los controladores con `MockMvc`, persistencia con JPA sobre H2, asincronía,
+transversales (interceptor, excepciones y aspecto) y paginación de la auditoría. La prueba de
+Testcontainers se ejecuta solo en el job `containers` porque necesita Docker.
+
 ## Integración continua
 
 El workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) se ejecuta en cada push y pull
@@ -344,7 +349,7 @@ Convención de mensajes: `feat:`, `fix:`, `docs:`, `test:`, `chore:`, `ci:`.
 | 5 | Controladores REST | ✅ |
 | 6 | Excepciones, interceptor y aspecto | ✅ |
 | 7 | Procesamiento asíncrono (no bloqueante) | ✅ |
-| 8 | Pruebas de integración y CI/CD | ⏳ |
+| 8 | Pruebas de integración y CI/CD | ✅ |
 | 9 | Informe y evidencias | ⏳ |
 
 ---
