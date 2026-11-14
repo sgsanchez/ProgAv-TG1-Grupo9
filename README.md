@@ -76,7 +76,7 @@ Interceptor HTTP (transversal a /api/**)
 | POST | `/api/ventas` | Registra una venta y descuenta stock |
 | POST | `/api/ventas/{id}/anular` | Anula una venta y repone stock |
 | PATCH | `/api/ventas/{id}/estado` | Cambia el estado de la venta |
-| GET | `/api/auditoria` | Registros de auditoría generados por AOP (filtro `?operacion=`) |
+| GET | `/api/auditoria?pagina=0&tamano=20&operacion=Venta` | Registros paginados (máx. 100), orden descendente por fecha |
 | GET | `/api/ventas/{id}/comprobante` | Comprobante de la venta (`?modo=bloqueante\|asincrono`) |
 
 Totales: **11 GET · 4 POST · 3 PUT-PATCH · 2 DELETE** (el mínimo exigido es 5/3/2/2).
