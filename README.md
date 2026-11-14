@@ -32,15 +32,16 @@ detalles de venta, como parte del **Proyecto Grupal de la Unidad 1** de la asign
 - Maven Wrapper (`mvnw`) · Docker · GitHub Actions
 
 ## Arquitectura N capas
-Controller → Service → Repository → Entity (JPA)
-↑ ↑
-DTO / Mapper Aspect (auditoría)
-↑
-Interceptor HTTP (transversal a /api/**)
-Exception (manejo centralizado)
-Configuration
 
-text
+```
+Controller  →  Service  →  Repository  →  Entity (JPA)
+     ↑             ↑
+   DTO / Mapper  Aspect (auditoría)
+     ↑
+Interceptor HTTP (transversal a /api/**)
+   Exception (manejo centralizado)
+   Configuration
+```
 
 | Capa | Paquete | Responsabilidad |
 |---|---|---|
@@ -169,20 +170,21 @@ tecnología reactiva (WebFlux + R2DBC).
 ```bash
 cd Proyecto
 ./mvnw spring-boot:run          # Windows: mvnw.cmd spring-boot:run
-API: http://localhost:8080
+```
 
-Swagger UI: http://localhost:8080/swagger-ui.html
+- API: <http://localhost:8080>
+- Swagger UI: <http://localhost:8080/swagger-ui.html>
+- Consola H2: <http://localhost:8080/h2-console> (JDBC URL `jdbc:h2:file:./data/ventasdb`)
 
-Consola H2: http://localhost:8080/h2-console (JDBC URL jdbc:h2:file:./data/ventasdb)
+### 2. Perfil PostgreSQL (base de datos real)
 
-2. Perfil PostgreSQL (base de datos real)
-Opción A — PostgreSQL portable (sin Docker ni administrador)
+**Opción A — PostgreSQL portable (sin Docker ni administrador)**
 
 Los binarios se instalan una sola vez fuera del repositorio, en
-%LOCALAPPDATA%\PostgreSQL, y el clúster de datos vive en D:\pgdata-ventas
-(configurable con la variable PGDATA_VENTAS). Pasos de instalación:
+`%LOCALAPPDATA%\PostgreSQL`, y el clúster de datos vive en `D:\pgdata-ventas`
+(configurable con la variable `PGDATA_VENTAS`). Pasos de instalación:
 
-powershell
+```powershell
 # 1) Descargar y extraer los binarios (PostgreSQL 17.7 para Windows x64)
 $dest = "$env:LOCALAPPDATA\PostgreSQL"
 New-Item -ItemType Directory -Force -Path $dest | Out-Null
@@ -197,14 +199,16 @@ $pg = "$env:LOCALAPPDATA\PostgreSQL\pgsql\bin"
 & "$pg\pg_ctl.exe" start -D 'D:\pgdata-ventas' -l "$env:LOCALAPPDATA\PostgreSQL\postgres.log" -o "-p 5432" -w
 & "$pg\psql.exe" -h localhost -U ventas -d postgres -c "ALTER USER ventas WITH PASSWORD 'ventas123';"
 & "$pg\psql.exe" -h localhost -U ventas -d postgres -c "CREATE DATABASE ventasdb WITH OWNER ventas ENCODING 'UTF8' TEMPLATE template0;"
-Nota sobre la codificación: en este equipo initdb falla al crear el clúster en UTF8
-por el locale del sistema, por eso el clúster se crea en LATIN1 con --locale=C.
-Gracias a que el locale es C, la base ventasdb sí puede crearse en UTF8 usando
-template0, que es lo que realmente importa para la aplicación.
+```
+
+> **Nota sobre la codificación:** en este equipo `initdb` falla al crear el clúster en UTF8
+> por el locale del sistema, por eso el clúster se crea en `LATIN1` con `--locale=C`.
+> Gracias a que el locale es `C`, la base `ventasdb` sí puede crearse en **UTF8** usando
+> `template0`, que es lo que realmente importa para la aplicación.
 
 Una vez inicializado el clúster, el ciclo diario es:
 
-powershell
+```powershell
 # Solo la primera vez, si PowerShell bloquea los scripts:
 Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
 
@@ -212,92 +216,139 @@ Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
 $env:SPRING_PROFILES_ACTIVE = "postgres"
 .\mvnw.cmd spring-boot:run
 .\scripts\db-stop.ps1                             # detiene el servidor
-Opción B — Docker Desktop
+```
 
-powershell
+**Opción B — Docker Desktop**
+
+```powershell
 docker compose up -d postgres
 $env:SPRING_PROFILES_ACTIVE = "postgres"
 .\mvnw.cmd spring-boot:run
-3. Todo con Docker
-bash
+```
+
+### 3. Todo con Docker
+
+```bash
 cd Proyecto
 docker compose up --build
-Apagado y reinicio del equipo
+```
+
+## Apagado y reinicio del equipo
+
 Para que apagar la computadora nunca deje el proyecto en mal estado:
 
-powershell
+```powershell
 # ANTES de apagar el equipo
 .\scripts\apagar-entorno.ps1     # detiene la API y PostgreSQL, y avisa si hay cambios sin commitear
 
 # AL ENCENDER el equipo
 .\scripts\verificar-entorno.ps1  # comprueba herramientas, arranca la BD y valida la conexión
 .\scripts\verificar-entorno.ps1 -Compilar   # además compila y ejecuta las pruebas
-Los datos de PostgreSQL se guardan en D:\pgdata-ventas, fuera del repositorio, por lo que
+```
+
+Los datos de PostgreSQL se guardan en `D:\pgdata-ventas`, fuera del repositorio, por lo que
 sobreviven a cualquier reinicio o actualización de código.
 
-Si verificar-entorno.ps1 reporta un fallo de PostgreSQL, revisar el log en
-%LOCALAPPDATA%\PostgreSQL\postgres.log. Un BOM al inicio de postgresql.conf impide que el
-servidor arranque; el archivo debe guardarse en UTF-8 sin BOM.
+> Si `verificar-entorno.ps1` reporta un fallo de PostgreSQL, revisar el log en
+> `%LOCALAPPDATA%\PostgreSQL\postgres.log`. Un BOM al inicio de `postgresql.conf` impide que el
+> servidor arranque; el archivo debe guardarse en UTF-8 **sin BOM**.
 
-Datos semilla
-Al arrancar con los perfiles dev o postgres se ejecuta src/main/resources/db/seed.sql, que
+## Datos semilla
+
+Al arrancar con los perfiles `dev` o `postgres` se ejecuta `src/main/resources/db/seed.sql`, que
 inserta clientes, productos y ventas de ejemplo (incluida una con stock bajo y otra anulada).
-El script es idempotente: cada INSERT valida antes si el registro ya existe, por lo que
+El script es **idempotente**: cada `INSERT` valida antes si el registro ya existe, por lo que
 reiniciar la aplicación no duplica información.
 
-Tabla	Registros
-clientes	3
-productos	5 (uno con stock bajo)
-ventas	3 (2 pagadas, 1 anulada)
-detalle_venta	4
-Pruebas
-bash
+| Tabla | Registros |
+|---|---|
+| `clientes` | 3 |
+| `productos` | 5 (uno con stock bajo) |
+| `ventas` | 3 (2 pagadas, 1 anulada) |
+| `detalle_venta` | 4 |
+
+## Pruebas
+
+```bash
 cd Proyecto
 ./mvnw verify
-Integración continua
-Job	Qué hace	Requiere Docker
-build	./mvnw clean verify (compila + pruebas con H2) y publica surefire-reports	No
-containers	Pruebas @Tag("containers") contra PostgreSQL 17 con Testcontainers	Sí
+```
+
+## Integración continua
+
+El workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) se ejecuta en cada push y pull
+request hacia `main` y `develop`, con dos jobs:
+
+| Job | Qué hace | Requiere Docker |
+|---|---|---|
+| `build` | `./mvnw clean verify` (compila + pruebas con H2) y publica `surefire-reports` | No |
+| `containers` | Pruebas `@Tag("containers")` contra PostgreSQL 17 con Testcontainers | Sí |
+
 Para ejecutar las pruebas de contenedores en local:
 
+```bash
 ./mvnw -B -ntp -Dgroups=containers -DexcludedGroups=ninguno verify
+```
 
-Empaquetado
-bash
+El build normal las excluye mediante `<excludedGroups>containers</excludedGroups>`, así que
+`mvnw verify` funciona aunque Docker no esté disponible.
+
+## Empaquetado
+
+```bash
 cd Proyecto
 ./mvnw clean package
 java -jar target/ventas-facturacion-1.0.0.jar
-Trabajo colaborativo con Git
-Cada integrante debe configurar su identidad en su propio equipo (la nota depende del historial de commits):
+```
 
-powershell
+---
+
+## Trabajo colaborativo con Git
+
+Cada integrante debe configurar su identidad **en su propio equipo** (la nota depende del historial de commits):
+
+```powershell
 git config --global user.name  "Nombre Apellido"
 git config --global user.email "correo@espe.edu.ec"
-Flujo de trabajo por rama, con develop como integración:
+```
 
-powershell
+Flujo de trabajo por rama, con `develop` como integración:
+
+```powershell
 git clone https://github.com/sgsanchez/ProgAv-TG1-Grupo9.git
 git checkout -b feature/mi-funcionalidad develop
 # ... trabajo y commits ...
 git push -u origin feature/mi-funcionalidad
-Rama	Responsable	Contenido
-feature/clientes	Josué Muñoz	Entidad, CRUD y reglas de Cliente
-feature/ventas	Santiago Sánchez	Venta, DetalleVenta, stock y totales
-feature/transversales	Steven Sandoval	Interceptor, aspecto y excepciones
-feature/infra-docs	Katherine Vargas	CI/CD, pruebas de integración e informes
-Convención de mensajes: feat:, fix:, docs:, test:, chore:, ci:.
+```
 
-Estado del proyecto
-Fase	Descripción	Estado
-0	Entorno, Git y repositorio	✅
-1	Esqueleto, configuración, perfiles, Docker, CI	✅
-2	Modelo de datos y persistencia	✅
-3	DTOs, validaciones y mappers	✅
-4	Servicios y reglas de negocio	✅
-5	Controladores REST	✅
-6	Excepciones, interceptor y aspecto	✅
-7	Procesamiento asíncrono (no bloqueante)	✅
-8	Pruebas de integración y CI/CD	⏳
-9	Informe y evidencias	⏳
-Licencia
+| Rama | Responsable | Contenido |
+|---|---|---|
+| `feature/clientes` | Josué Muñoz | Entidad, CRUD y reglas de Cliente |
+| `feature/ventas` | Santiago Sánchez | Venta, DetalleVenta, stock y totales |
+| `feature/transversales` | Steven Sandoval | Interceptor, aspecto y excepciones |
+| `feature/infra-docs` | Katherine Vargas | CI/CD, pruebas de integración e informes |
+
+Convención de mensajes: `feat:`, `fix:`, `docs:`, `test:`, `chore:`, `ci:`.
+
+---
+
+## Estado del proyecto
+
+| Fase | Descripción | Estado |
+|---|---|---|
+| 0 | Entorno, Git y repositorio | ✅ |
+| 1 | Esqueleto, configuración, perfiles, Docker, CI | ✅ |
+| 2 | Modelo de datos y persistencia | ✅ |
+| 3 | DTOs, validaciones y mappers | ✅ |
+| 4 | Servicios y reglas de negocio | ✅ |
+| 5 | Controladores REST | ✅ |
+| 6 | Excepciones, interceptor y aspecto | ✅ |
+| 7 | Procesamiento asíncrono (no bloqueante) | ✅ |
+| 8 | Pruebas de integración y CI/CD | ⏳ |
+| 9 | Informe y evidencias | ⏳ |
+
+---
+
+## Licencia
+
 Proyecto académico — Universidad de las Fuerzas Armadas ESPE, 2026.
