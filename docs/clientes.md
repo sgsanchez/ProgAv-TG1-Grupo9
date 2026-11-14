@@ -60,7 +60,31 @@ erDiagram
     }
     VENTAS {
         bigint id PK
+        varchar numero UK
         bigint cliente_id FK
+        timestamp fecha_venta
+        decimal subtotal
+        decimal iva
+        decimal total
+        varchar estado
+    }
+    PRODUCTOS {
+        bigint id PK
+        varchar codigo UK
+        varchar nombre
+        varchar descripcion
+        decimal precio
+        int stock
+        int stock_minimo
+        boolean activo
+    }
+    DETALLE_VENTA {
+        bigint id PK
+        bigint venta_id FK
+        bigint producto_id FK
+        int cantidad
+        decimal precio_unitario
+        decimal subtotal
     }
 ```
 

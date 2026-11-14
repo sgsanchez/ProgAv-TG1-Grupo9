@@ -276,8 +276,9 @@ cd Proyecto
 
 El proyecto tiene **82 pruebas** repartidas en diez clases: unidad de servicios y validación de
 DTO, integración de los controladores con `MockMvc`, persistencia con JPA sobre H2, asincronía,
-transversales (interceptor, excepciones y aspecto) y paginación de la auditoría. La prueba de
-Testcontainers se ejecuta solo en el job `containers` porque necesita Docker.
+transversales (interceptor, excepciones y aspecto) y paginación de la auditoría. Aparte quedan las
+3 pruebas de `PostgresContenedorTest`, que se ejecutan solo en el job `containers` porque necesitan
+Docker.
 
 ## Integración continua
 
