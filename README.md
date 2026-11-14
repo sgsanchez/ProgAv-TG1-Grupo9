@@ -296,8 +296,9 @@ Para ejecutar las pruebas de contenedores en local:
 ./mvnw -B -ntp -Dgroups=containers -DexcludedGroups=ninguno verify
 ```
 
-El build normal las excluye mediante `<excludedGroups>containers</excludedGroups>`, así que
-`mvnw verify` funciona aunque Docker no esté disponible.
+El build normal las excluye mediante la propiedad `<excludedGroups>containers</excludedGroups>`
+del `pom.xml` (la del bloque `properties`, que el job `containers` sobrescribe con
+`-DexcludedGroups=ninguno`), así que `mvnw verify` funciona aunque Docker no esté disponible.
 
 ## Empaquetado
 

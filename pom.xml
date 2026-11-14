@@ -20,6 +20,10 @@
     <properties>
         <java.version>21</java.version>
         <springdoc.version>2.8.17</springdoc.version>
+        <!-- Grupos de JUnit que se excluyen del build normal. El job "containers" de
+             GitHub Actions lo redefine con -DexcludedGroups=ninguno para ejecutar las
+             pruebas que necesitan Docker. -->
+        <excludedGroups>containers</excludedGroups>
     </properties>
 
     <dependencies>
@@ -101,8 +105,9 @@
                 <configuration>
                     <argLine>--enable-native-access=ALL-UNNAMED -XX:+EnableDynamicAgentLoading</argLine>
                     <!-- Las pruebas @Tag("containers") necesitan Docker: se excluyen del
-                         build normal y se ejecutan en el job "containers" de GitHub Actions. -->
-                    <excludedGroups>containers</excludedGroups>
+                         build normal y se ejecutan en el job "containers" de GitHub Actions.
+                         El valor se toma de la propiedad de arriba para poder sobrescribirlo. -->
+                    <excludedGroups>${excludedGroups}</excludedGroups>
                     <systemPropertyVariables>
                         <!-- Permite que Mockito/ByteBuddy instrumente clases
                              cuando Maven se ejecuta sobre un JDK más nuevo
