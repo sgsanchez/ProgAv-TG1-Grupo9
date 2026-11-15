@@ -48,6 +48,13 @@ public class ClienteService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<ClienteResponse> buscarPorCedula(String cedula) {
+        return clienteRepository.findByCedulaContainingIgnoreCase(cedula.trim()).stream()
+                .map(ClienteMapper::toResponse)
+                .toList();
+    }
+
     /**
      * Registra un cliente validando que la cédula y el correo no estén repetidos.
      */

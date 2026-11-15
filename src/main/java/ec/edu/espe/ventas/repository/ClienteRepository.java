@@ -30,6 +30,8 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
      */
     List<Cliente> findByApellidoContainingIgnoreCase(String apellido);
 
+    List<Cliente> findByCedulaContainingIgnoreCase(String cedula);
+
     List<Cliente> findByActivoTrue();
 
     long countByActivoTrue();

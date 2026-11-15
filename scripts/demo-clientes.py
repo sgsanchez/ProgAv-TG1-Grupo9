@@ -99,6 +99,12 @@ def main():
                 consultado = solicitar("Consulta por ID", "GET", ruta, 200)
                 lista = solicitar("Filtro con espacios y mayúsculas", "GET", "/api/clientes?apellido=%20PeR%20", 200)
                 assert len(lista) == 1
+                por_cedula = solicitar("Filtro parcial por cedula", "GET", "/api/clientes?cedula=%20000099%20", 200)
+                assert len(por_cedula) == 1 and por_cedula[0]["id"] == cliente["id"]
+                sin_coincidencia = solicitar("Cedula sin coincidencia", "GET", "/api/clientes?cedula=777777", 200)
+                assert sin_coincidencia == []
+                prioridad = solicitar("Prioridad de cedula frente a apellido", "GET", "/api/clientes?cedula=1800000099&apellido=sin-coincidencia", 200)
+                assert len(prioridad) == 1 and prioridad[0]["id"] == cliente["id"]
                 solicitar("Cédula duplicada", "POST", "/api/clientes", 409, {**datos, "email": "otra@example.com"})
                 solicitar("Correo duplicado sin distinguir mayúsculas", "POST", "/api/clientes", 409,
                           {**datos, "cedula": "1800000098", "email": "demo.cliente@example.com"})
@@ -112,7 +118,8 @@ def main():
                 assert persistido["nombre"] == "Ana Maria"
                 solicitar("Eliminación sin ventas", "DELETE", ruta, 204)
                 solicitar("Consulta de recurso eliminado", "GET", ruta, 404)
-                auditoria = solicitar("Auditoría de operaciones de clientes", "GET", "/api/auditoria", 200)
+                pagina_auditoria = solicitar("Auditoría de operaciones de clientes", "GET", "/api/auditoria?operacion=ClienteService&tamano=100", 200)
+                auditoria = pagina_auditoria["contenido"]
                 assert any(a["operacion"] == "ClienteService.crear" for a in auditoria)
                 assert any(a["operacion"] == "ClienteService.eliminar" for a in auditoria)
                 salida = Path(args.output)
