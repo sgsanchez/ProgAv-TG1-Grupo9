@@ -15,8 +15,12 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -117,5 +121,35 @@ class TransversalesAmpliadoTest {
         long antes = auditoria.count();
         mvc.perform(api(get("/api/clientes"))).andExpect(status().isOk());
         assertThat(auditoria.count()).isEqualTo(antes);
+    }
+
+    @Test
+    void metodoHttpNoSoportadoDevuelve405ConCabeceraAllow() throws Exception {
+        mvc.perform(api(put("/api/ventas")).contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isMethodNotAllowed())
+                .andExpect(header().string("Allow", containsString("POST")))
+                .andExpect(jsonPath("$.status").value(405))
+                .andExpect(jsonPath("$.mensaje")
+                        .value("El método PUT no está permitido en esta ruta"));
+    }
+
+    @Test
+    void tipoDeContenidoNoSoportadoDevuelve415() throws Exception {
+        mvc.perform(api(post("/api/clientes")).contentType(MediaType.TEXT_PLAIN).content("hola"))
+                .andExpect(status().isUnsupportedMediaType())
+                .andExpect(jsonPath("$.status").value(415))
+                .andExpect(jsonPath("$.mensaje")
+                        .value("El tipo de contenido de la petición no es compatible; envíe application/json"));
+    }
+
+    @Test
+    void estadoFueraDelDominioDevuelve400ConMensajeClaro() throws Exception {
+        mvc.perform(api(patch("/api/ventas/{id}/estado", 1L))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"estado\":\"PENDIENTE\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.mensaje")
+                        .value("El valor 'PENDIENTE' no es válido para el campo 'estado'"))
+                .andExpect(jsonPath("$.detalles[0]", containsString("REGISTRADA")));
     }
 }

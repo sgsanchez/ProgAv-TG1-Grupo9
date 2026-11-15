@@ -105,6 +105,9 @@ Todas las excepciones se traducen a un cuerpo uniforme
 | `ReglaNegocioException` | 409 |
 | `RecursoDuplicadoException` | 409 |
 | Errores de validación / JSON inválido | 400 (con detalle por campo) |
+| Valor fuera del dominio de un campo (p. ej. un estado de venta inexistente) | 400 (indica el campo y los valores permitidos) |
+| Método HTTP no admitido en la ruta | 405 (incluye la cabecera `Allow`) |
+| Tipo de contenido de la petición no soportado | 415 |
 | Error no controlado | 500 |
 
 ### Interceptor HTTP
@@ -274,7 +277,7 @@ cd Proyecto
 ./mvnw verify
 ```
 
-El proyecto tiene **87 pruebas** repartidas en diez clases: unidad de servicios y validación de
+El proyecto tiene **90 pruebas** repartidas en diez clases: unidad de servicios y validación de
 DTO, integración de los controladores con `MockMvc`, persistencia con JPA sobre H2, asincronía,
 transversales (interceptor, excepciones y aspecto) y paginación de la auditoría. Aparte quedan las
 3 pruebas de `PostgresContenedorTest`, que se ejecutan solo en el job `containers` porque necesitan
