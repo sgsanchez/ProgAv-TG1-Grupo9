@@ -109,6 +109,7 @@ Todas las rutas requieren `X-API-KEY`; en desarrollo el valor predeterminado es 
 | Método | Ruta | Éxito | Errores principales |
 |---|---|---|---|
 | GET | `/api/clientes` | 200, lista | 401 sin clave válida |
+| GET | `/api/clientes?cedula=1712` | 200, cédula que contiene el texto, sin espacios externos | 401 |
 | GET | `/api/clientes?apellido=per` | 200, coincidencia parcial sin distinguir mayúsculas | 401 |
 | GET | `/api/clientes/{id}` | 200 | 404 inexistente, 400 ID no numérico |
 | POST | `/api/clientes` | 201 y cabecera Location | 400 validación, 409 duplicado |
@@ -127,6 +128,11 @@ Ejemplo para POST y PUT (datos ficticios):
   "direccion": "Quito"
 }
 ```
+
+Si se envían `cedula` y `apellido` juntos, se aplica `cedula` cuando contiene texto.
+Una cédula vacía o con solo espacios permite filtrar por apellido; si ambos filtros
+están vacíos, se listan todos los clientes. El filtro conserva la cédula como texto,
+por lo que mantiene los ceros iniciales.
 
 ## Reglas y manejo de errores
 
@@ -227,3 +233,18 @@ video ni la entrega en el aula virtual. Los commits conservan sus fechas reales.
 - Distribución del equipo y código: [repositorio del Grupo 9](https://github.com/sgsanchez/ProgAv-TG1-Grupo9).
 - Componentes consultables en el código: `ClienteController`, `ClienteService`, `ClienteRepository`,
   `Cliente`, `ClienteRequest`, `ClienteMapper`, `GlobalExceptionHandler` y `ClientesIntegracionTest`.
+
+## Ampliación del 15 de noviembre de 2026
+
+La rama `feature/clientes-cedula`, creada desde `develop` actualizado, agrega la consulta
+`findByCedulaContainingIgnoreCase` al repositorio y `buscarPorCedula` al servicio.
+El controlador prioriza la cédula frente al apellido sin incorporar lógica de persistencia.
+Se agregan cinco casos: coincidencia parcial con espacios, ninguna coincidencia, filtro
+vacío, prioridad de cédula y continuidad del filtro por apellido con cédula vacía.
+La demostración HTTP incluye el nuevo filtro y usa el contrato paginado actual de auditoría.
+Los resultados del 12/11 son históricos; las nuevas verificaciones se registran por separado
+en `docs/evidencias/clientes-cedula-http.json`.
+
+Validación del 15/11: `clean verify` y las ejecuciones previas a cada commit completaron
+87 pruebas sin fallos. La demostración registró 15 solicitudes HTTP correctas, incluido
+el reinicio de Java. Las tres pruebas de PostgreSQL se ejecutan en el job separado de CI.

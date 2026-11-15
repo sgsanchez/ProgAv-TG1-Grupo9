@@ -61,7 +61,7 @@ Interceptor HTTP (transversal a /api/**)
 
 | Método | Ruta | Descripción |
 |---|---|---|
-| GET | `/api/clientes` | Lista clientes (filtro opcional `?apellido=`) |
+| GET | `/api/clientes` | Lista clientes (filtros opcionales `?cedula=` o `?apellido=`, con prioridad de cédula) |
 | GET | `/api/clientes/{id}` | Obtiene un cliente |
 | POST | `/api/clientes` | Registra un cliente |
 | PUT | `/api/clientes/{id}` | Actualiza un cliente |
