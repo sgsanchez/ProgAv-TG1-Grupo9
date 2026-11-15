@@ -1,17 +1,24 @@
 package ec.edu.espe.ventas.exception;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -98,12 +105,66 @@ public class GlobalExceptionHandler {
         return respuesta(HttpStatus.BAD_REQUEST, "Los parámetros enviados no son válidos", request, detalles);
     }
 
-    /** JSON mal formado o con tipos incorrectos → 400. */
+    /** JSON mal formado, tipos incorrectos o valores fuera del dominio del campo → 400. */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiError> cuerpoIlegible(HttpMessageNotReadableException ex,
                                                    HttpServletRequest request) {
-        return respuesta(HttpStatus.BAD_REQUEST,
-                "El cuerpo de la petición está vacío o no tiene un formato JSON válido", request, null);
+        String mensaje = "El cuerpo de la petición está vacío o no tiene un formato JSON válido";
+        List<String> detalles = null;
+
+        if (ex.getCause() instanceof InvalidFormatException invalido) {
+            String campo = ultimoCampo(invalido);
+            if (campo != null) {
+                mensaje = "El valor '" + invalido.getValue() + "' no es válido para el campo '" + campo + "'";
+            }
+            Class<?> tipo = invalido.getTargetType();
+            if (tipo != null && tipo.isEnum()) {
+                String permitidos = Arrays.stream(tipo.getEnumConstants())
+                        .map(Object::toString)
+                        .collect(Collectors.joining(", "));
+                detalles = List.of("Valores permitidos: " + permitidos);
+            }
+        }
+        return respuesta(HttpStatus.BAD_REQUEST, mensaje, request, detalles);
+    }
+
+    /** Nombre del último campo del cuerpo implicado en el error de deserialización. */
+    private String ultimoCampo(InvalidFormatException invalido) {
+        if (invalido.getPath().isEmpty()) {
+            return null;
+        }
+        return invalido.getPath().get(invalido.getPath().size() - 1).getFieldName();
+    }
+
+    /** Método HTTP no admitido en la ruta → 405 con la cabecera Allow. */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiError> metodoNoSoportado(HttpRequestMethodNotSupportedException ex,
+                                                      HttpServletRequest request) {
+        Set<HttpMethod> soportados = ex.getSupportedHttpMethods();
+        List<String> detalles = null;
+        if (soportados != null && !soportados.isEmpty()) {
+            detalles = List.of("Métodos permitidos: " + soportados.stream()
+                    .map(HttpMethod::name)
+                    .sorted()
+                    .collect(Collectors.joining(", ")));
+        }
+        ResponseEntity<ApiError> error = respuesta(HttpStatus.METHOD_NOT_ALLOWED,
+                "El método " + ex.getMethod() + " no está permitido en esta ruta", request, detalles);
+        if (soportados == null || soportados.isEmpty()) {
+            return error;
+        }
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .allow(soportados.toArray(new HttpMethod[0]))
+                .body(error.getBody());
+    }
+
+    /** Tipo de contenido de la petición no soportado → 415. */
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ApiError> tipoContenidoNoSoportado(HttpMediaTypeNotSupportedException ex,
+                                                             HttpServletRequest request) {
+        return respuesta(HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+                "El tipo de contenido de la petición no es compatible; envíe application/json",
+                request, null);
     }
 
     /** Parámetro de ruta con tipo incorrecto (por ejemplo un id no numérico) → 400. */
