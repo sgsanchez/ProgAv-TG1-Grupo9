@@ -34,8 +34,12 @@ public class ClienteController {
     }
 
     @GetMapping
-    @Operation(summary = "Lista los clientes (opcionalmente filtrados por apellido)")
-    public List<ClienteResponse> listar(@RequestParam(required = false) String apellido) {
+    @Operation(summary = "Lista los clientes (opcionalmente filtrados por cédula o apellido)")
+    public List<ClienteResponse> listar(@RequestParam(required = false) String cedula,
+                                        @RequestParam(required = false) String apellido) {
+        if (cedula != null && !cedula.isBlank()) {
+            return clienteService.buscarPorCedula(cedula);
+        }
         if (apellido == null || apellido.isBlank()) {
             return clienteService.listar();
         }
