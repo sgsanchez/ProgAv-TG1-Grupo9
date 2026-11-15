@@ -14,7 +14,7 @@ detalles de venta, como parte del **Proyecto Grupal de la Unidad 1** de la asign
 
 | Integrante | Usuario GitHub | Rama |
 |---|---|---|
-| Josué Nicolás Muñoz Gualotuña | @NicoESPE01 | feature/clientes |
+| Josué Nicolás Muñoz Gualotuña | @NicoESPE01 | feature/clientes y feature/clientes-cedula |
 | Santiago Geovanny Sánchez Camacho | @sgsanchez | feature/ventas |
 | Steven Sebastián Sandoval Casillas | @sssandoval2 | feature/transversales |
 | Katherine Gabriela Vargas Chirau | @kgvargas3 | feature/infra-docs |
@@ -128,8 +128,8 @@ de negocio falla.
 
 ## Programación bloqueante y no bloqueante
 
-**Operación considerada bloqueante:** la generación del comprobante de la venta (armado del
-documento y envío por correo) y, en general, cualquier acceso JDBC dentro de la transacción.
+**Operación considerada bloqueante:** la generación del comprobante de la venta (texto y simulación del costo de
+generación y envío; no se envía correo real) y, en general, cualquier acceso JDBC dentro de la transacción.
 Ambas se ejecutan en el hilo que atiende la petición HTTP (`http-nio-8080-exec-*`); mientras
 duran, ese hilo del pool de Tomcat queda ocupado y no puede atender otra solicitud.
 
@@ -168,7 +168,7 @@ tecnología reactiva (WebFlux + R2DBC).
 ### 1. Perfil de desarrollo (H2 en archivo, sin Docker)
 
 ```bash
-cd Proyecto
+cd ProgAv-TG1-Grupo9
 ./mvnw spring-boot:run          # Windows: mvnw.cmd spring-boot:run
 ```
 
@@ -274,7 +274,7 @@ cd Proyecto
 ./mvnw verify
 ```
 
-El proyecto tiene **82 pruebas** repartidas en diez clases: unidad de servicios y validación de
+El proyecto tiene **87 pruebas** repartidas en diez clases: unidad de servicios y validación de
 DTO, integración de los controladores con `MockMvc`, persistencia con JPA sobre H2, asincronía,
 transversales (interceptor, excepciones y aspecto) y paginación de la auditoría. Aparte quedan las
 3 pruebas de `PostgresContenedorTest`, que se ejecutan solo en el job `containers` porque necesitan
@@ -330,7 +330,7 @@ git push -u origin feature/mi-funcionalidad
 
 | Rama | Responsable | Contenido |
 |---|---|---|
-| `feature/clientes` | Josué Muñoz | Entidad, CRUD y reglas de Cliente |
+| `feature/clientes` y `feature/clientes-cedula` | Josué Muñoz | CRUD, unicidad de correo, filtro por cédula y pruebas de clientes |
 | `feature/ventas` | Santiago Sánchez | Venta, DetalleVenta, stock y totales |
 | `feature/transversales` | Steven Sandoval | Interceptor, aspecto y excepciones |
 | `feature/infra-docs` | Katherine Vargas | CI/CD, pruebas de integración e informes |
@@ -352,9 +352,24 @@ Convención de mensajes: `feat:`, `fix:`, `docs:`, `test:`, `chore:`, `ci:`.
 | 6 | Excepciones, interceptor y aspecto | ✅ |
 | 7 | Procesamiento asíncrono (no bloqueante) | ✅ |
 | 8 | Pruebas de integración y CI/CD | ✅ |
-| 9 | Informe y evidencias | ⏳ |
+| 9 | Informe y evidencias | ✅ PDF y evidencias disponibles; video y entrega al aula pendientes |
 
 ---
+
+## Entregables
+
+- [Informe PDF: TallerGrupal1_Grupo9.pdf](https://drive.google.com/file/d/13e4hvxvEzCIKqvRpMiWkidlAL8f8BMP3/view).
+- [Presentación de defensa con notas](https://docs.google.com/presentation/d/1VsOiZtaFBqXV2CF7ImXNXTE_rZwGnWPE/edit).
+- [Carpeta compartida del grupo](https://drive.google.com/drive/folders/1fe4CMzR4p3g_8oED7RhxJmd6vLqtumFL).
+- [Guía de demostración de clientes](docs/clientes.md).
+
+El informe incluye resultados históricos del equipo y la ampliación de clientes del 15/11.
+La demostración reproducible de clientes tiene 15 casos HTTP y verifica persistencia tras
+reiniciar Java; sus respuestas están en `docs/evidencias/clientes-cedula-http.json`.
+
+Pendiente del equipo: grabar el video (máximo 15 minutos, todos con cámara y micrófono),
+comprobar su acceso sin sesión y colocar el enlace como comentario al subir el PDF al aula.
+El pipeline realiza integración continua; no despliega automáticamente.
 
 ## Licencia
 
