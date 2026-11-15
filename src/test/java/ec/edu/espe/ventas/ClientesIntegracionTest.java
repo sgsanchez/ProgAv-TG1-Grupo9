@@ -159,6 +159,51 @@ class ClientesIntegracionTest {
         assertThat(clientes.count()).isZero();
     }
 
+    @Test
+    void filtraPorCedulaParcialIgnorandoEspacios() throws Exception {
+        guardar("1712345678", "ana@example.com");
+        guardar("0900000001", "otro@example.com");
+        mvc.perform(api(get("/api/clientes")).param("cedula", "  1712  "))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].cedula").value("1712345678"));
+    }
+
+    @Test
+    void devuelveListaVaciaCuandoNingunaCedulaCoincide() throws Exception {
+        guardar("1712345678", "ana@example.com");
+        mvc.perform(api(get("/api/clientes")).param("cedula", "9999"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void conCedulaVaciaDevuelveTodosLosClientes() throws Exception {
+        guardar("1712345678", "ana@example.com");
+        guardar("0900000001", "otro@example.com");
+        mvc.perform(api(get("/api/clientes")).param("cedula", " "))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2));
+    }
+
+    @Test
+    void cedulaTienePrioridadSobreApellidoCuandoSeEnvianAmbos() throws Exception {
+        guardar("1712345678", "ana@example.com");
+        guardar("0900000001", "otro@example.com");
+        mvc.perform(api(get("/api/clientes")).param("cedula", "1712").param("apellido", "sin-coincidencia"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].cedula").value("1712345678"));
+    }
+
+    @Test
+    void cedulaEnBlancoConservaElFiltroPorApellido() throws Exception {
+        guardar("1712345678", "ana@example.com");
+        mvc.perform(api(get("/api/clientes")).param("cedula", " ").param("apellido", "sin-coincidencia"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
     private Cliente guardar(String cedula, String email) {
         Cliente cliente = new Cliente();
         cliente.setCedula(cedula);
