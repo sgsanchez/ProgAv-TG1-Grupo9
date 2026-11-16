@@ -355,13 +355,14 @@ Convención de mensajes: `feat:`, `fix:`, `docs:`, `test:`, `chore:`, `ci:`.
 | 6 | Excepciones, interceptor y aspecto | ✅ |
 | 7 | Procesamiento asíncrono (no bloqueante) | ✅ |
 | 8 | Pruebas de integración y CI/CD | ✅ |
-| 9 | Informe y evidencias | ✅ PDF y evidencias disponibles; video y entrega al aula pendientes |
+| 9 | Informe y evidencias | ✅ PDF y evidencias disponibles; video enlazado; entrega al aula pendiente |
 
 ---
 
 ## Entregables
 
 - [Informe PDF: TallerGrupal1_Grupo9.pdf](https://drive.google.com/file/d/13e4hvxvEzCIKqvRpMiWkidlAL8f8BMP3/view).
+- [Video de exposición](https://youtu.be/gP5-Aj2mUgw).
 - [Presentación de defensa con notas](https://docs.google.com/presentation/d/1VsOiZtaFBqXV2CF7ImXNXTE_rZwGnWPE/edit).
 - [Carpeta compartida del grupo](https://drive.google.com/drive/folders/1fe4CMzR4p3g_8oED7RhxJmd6vLqtumFL).
 - [Guía de demostración de clientes](docs/clientes.md).
@@ -370,8 +371,9 @@ El informe incluye resultados históricos del equipo y la ampliación de cliente
 La demostración reproducible de clientes tiene 15 casos HTTP y verifica persistencia tras
 reiniciar Java; sus respuestas están en `docs/evidencias/clientes-cedula-http.json`.
 
-Pendiente del equipo: grabar el video (máximo 15 minutos, todos con cámara y micrófono),
-comprobar su acceso sin sesión y colocar el enlace como comentario al subir el PDF al aula.
+Pendiente del equipo: comprobar la reproducción del video sin sesión, su duración máxima
+de 15 minutos y la participación de todos con cámara y micrófono; colocar su enlace como
+comentario al subir el PDF al aula.
 El pipeline realiza integración continua; no despliega automáticamente.
 
 ## Licencia
